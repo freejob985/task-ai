@@ -924,157 +924,138 @@ timerStart = Date.now() - (task.totalTime || 0);
                 updateStatistics();
                 renderStarredTasks();
             }
-function renderStarredTasks() {
-    const starredTasksContainer = document.getElementById('starred-tasks-container');
-    starredTasksContainer.innerHTML = '';
 
-    const starredTasks = projects.flatMap((project, projectIndex) => 
-        project.tasks
-            .filter(task => task.starred)
-            .map((task, taskIndex) => ({ ...task, projectName: project.name, projectId: projectIndex, taskId: taskIndex }))
-    );
+            function renderStarredTasks() {
+                const starredTasksContainer = document.getElementById('starred-tasks-container');
+                starredTasksContainer.innerHTML = '';
 
-    const table = document.createElement('table');
-    table.className = 'table table-hover';
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>تم</th>
-                <th>المشروع</th>
-                <th>المهمة</th>
-                <th>الحالة</th>
-                <th>الأولوية</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
-        <tbody id="starred-tasks-tbody">
-            ${starredTasks.length > 0 ? starredTasks.map((task, index) => `
-                <tr data-index="${index}" class="${task.status === 'مكتملة' ? 'completed-task' : ''} task-row">
-                    <td>
-                        <input type="checkbox" class="form-check-input starred-task-checkbox" ${task.status === 'مكتملة' ? 'checked' : ''}>
-                    </td>
-                    <td>${task.projectName}</td>
-                    <td class="${task.status === 'مكتملة' ? 'completed-task' : ''}">${task.name}</td>
-                    <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
-                    <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-info edit-starred-task-btn" data-index="${index}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-warning unstar-task-btn" data-index="${index}">
-                            <i class="fas fa-star"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('') : `
-                <tr>
-                    <td colspan="6" class="text-center">لا توجد مهام مميزة حاليًا.</td>
-                </tr>
-            `}
-        </tbody>
-    `;
-    starredTasksContainer.appendChild(table);
+                const starredTasks = projects.flatMap((project, projectIndex) => 
+                    project.tasks
+                        .filter(task => task.starred)
+                        .map((task, taskIndex) => ({ ...task, projectName: project.name, projectId: projectIndex, taskId: taskIndex }))
+                );
 
-    if (starredTasks.length > 0) {
-        // Initialize Sortable for the starred tasks table
-        new Sortable(document.getElementById('starred-tasks-tbody'), {
-            animation: 150,
-            ghostClass: 'blue-background-class',
-            handle: '.task-row', // This allows dragging by the entire row
-            onEnd: function (evt) {
-                const oldIndex = evt.oldIndex;
-                const newIndex = evt.newIndex;
+                const table = document.createElement('table');
+                table.className = 'table table-hover';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>تم</th>
+                            <th>المشروع</th>
+                            <th>المهمة</th>
+                            <th>الحالة</th>
+                            <th>الأولوية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="starred-tasks-tbody">
+                        ${starredTasks.length > 0 ? starredTasks.map(task => `
+                            <tr data-project-id="${task.projectId}" data-task-id="${task.taskId}" class="${task.status === 'مكتملة' ? 'completed-task' : ''} task-row">
+                                <td>
+                                    <input type="checkbox" class="form-check-input starred-task-checkbox" ${task.status === 'مكتملة' ? 'checked' : ''}>
+                                </td>
+                                <td>${task.projectName}</td>
+                                <td class="${task.status === 'مكتملة' ? 'completed-task' : ''}">${task.name}</td>
+                                <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
+                                <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-info edit-starred-task-btn" data-project-id="${task.projectId}" data-task-id="${task.taskId}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning unstar-task-btn" data-project-id="${task.projectId}" data-task-id="${task.taskId}">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('') : `
+                            <tr>
+                                <td colspan="6" class="text-center">لا توجد مهام مميزة حاليًا.</td>
+                            </tr>
+                        `}
+                    </tbody>
+                `;
+                starredTasksContainer.appendChild(table);
 
-                // Reorder the starredTasks array
-                const [movedTask] = starredTasks.splice(oldIndex, 1);
-                starredTasks.splice(newIndex, 0, movedTask);
+                if (starredTasks.length > 0) {
+                    // Initialize Sortable for the starred tasks table
+                    new Sortable(document.getElementById('starred-tasks-tbody'), {
+                        animation: 150,
+                        ghostClass: 'blue-background-class',
+                        handle: '.task-row', // This allows dragging by the entire row
+                        onEnd: function (evt) {
+                            const taskElement = evt.item;
+                            const projectId = taskElement.dataset.projectId;
+                            const taskId = taskElement.dataset.taskId;
+                            const newIndex = evt.newIndex;
 
-                // Update the projects array to reflect the new order
-                projects.forEach(project => {
-                    project.tasks = project.tasks.filter(task => !task.starred);
-                });
+                            // Remove the task from its original position
+                            const task = projects[projectId].tasks.splice(taskId, 1)[0];
 
-                starredTasks.forEach((task, index) => {
-                    const project = projects.find(p => p.name === task.projectName);
-                    if (project) {
-                        const taskIndex = project.tasks.findIndex(t => t.name === task.name);
-                        if (taskIndex !== -1) {
-                            project.tasks[taskIndex] = { ...task, starred: true };
-                        } else {
-                            project.tasks.push({ ...task, starred: true });
+                            // Find the new project and position
+                            const newProjectId = evt.to.children[newIndex].dataset.projectId;
+                            const newTaskId = evt.to.children[newIndex].dataset.taskId;
+
+                            // Insert the task at its new position
+                            projects[newProjectId].tasks.splice(newTaskId, 0, task);
+
+                            saveProjects();
+                            renderProjects();
+                            applyFilters();
+                            showToast('تم نقل المهمة بنجاح', 'success');
                         }
-                    }
-                });
+                    });
 
-                saveProjects();
-                renderProjects();
-                renderStarredTasks();
-                applyFilters();
-                showToast('تم نقل المهمة بنجاح', 'success');
+                    // Add event listeners for edit and unstar buttons
+                    document.querySelectorAll('.edit-starred-task-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const projectId = this.dataset.projectId;
+                            const taskId = this.dataset.taskId;
+                            const task = projects[projectId].tasks[taskId];
+
+                            projectIdInput.value = projectId;
+                            taskNameInput.value = task.name;
+                            taskDescriptionInput.value = task.description;
+                            taskStatusInput.value = task.status;
+                            taskPriorityInput.value = task.priority;
+                            tagify.removeAllTags();
+                            tagify.addTags(task.tags);
+                            taskStarredInput.checked = task.starred;
+                            taskIdInput.value = taskId;
+
+                            const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+                            taskModal.show();
+                        });
+                    });
+
+                    document.querySelectorAll('.unstar-task-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const projectId = this.dataset.projectId;
+                            const taskId = this.dataset.taskId;
+                            const task = projects[projectId].tasks[taskId];
+                            task.starred = false;
+                            saveProjects();
+                            renderProjects();
+                            applyFilters();
+                            showToast('تم إلغاء تمييز المهمة', 'success');
+                        });
+                    });
+
+                    // Add event listeners for starred task checkboxes
+                    document.querySelectorAll('.starred-task-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const projectId = this.closest('tr').dataset.projectId;
+                            const taskId = this.closest('tr').dataset.taskId;
+                            const task = projects[projectId].tasks[taskId];
+                            task.status = this.checked ? 'مكتملة' : 'قيد الانتظار';
+                            saveProjects();
+                            renderProjects();
+                            applyFilters();
+                            showToast(this.checked ? 'تم تحويل المهمة إلى مكتملة' : 'تم تحويل المهمة إلى قيد الانتظار', 'success');
+                        });
+                    });
+                }
             }
-        });
 
-        // Add event listeners for edit and unstar buttons
-        document.querySelectorAll('.edit-starred-task-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = this.dataset.index;
-                const task = starredTasks[index];
-
-                projectIdInput.value = task.projectId;
-                taskNameInput.value = task.name;
-                taskDescriptionInput.value = task.description;
-                taskStatusInput.value = task.status;
-                taskPriorityInput.value = task.priority;
-                tagify.removeAllTags();
-                tagify.addTags(task.tags);
-                taskStarredInput.checked = task.starred;
-                taskIdInput.value = task.taskId;
-
-                const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
-                taskModal.show();
-            });
-        });
-
-        document.querySelectorAll('.unstar-task-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = this.dataset.index;
-                const task = starredTasks[index];
-                const project = projects.find(p => p.name === task.projectName);
-                if (project) {
-                    const taskIndex = project.tasks.findIndex(t => t.name === task.name);
-                    if (taskIndex !== -1) {
-                        project.tasks[taskIndex].starred = false;
-                    }
-                }
-                saveProjects();
-                renderProjects();
-                renderStarredTasks();
-                applyFilters();
-                showToast('تم إلغاء تمييز المهمة', 'success');
-            });
-        });
-
-        // Add event listeners for starred task checkboxes
-        document.querySelectorAll('.starred-task-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const index = this.closest('tr').dataset.index;
-                const task = starredTasks[index];
-                const project = projects.find(p => p.name === task.projectName);
-                if (project) {
-                    const taskIndex = project.tasks.findIndex(t => t.name === task.name);
-                    if (taskIndex !== -1) {
-                        project.tasks[taskIndex].status = this.checked ? 'مكتملة' : 'قيد الانتظار';
-                    }
-                }
-                saveProjects();
-                renderProjects();
-                renderStarredTasks();
-                applyFilters();
-                showToast(this.checked ? 'تم تحويل المهمة إلى مكتملة' : 'تم تحويل المهمة إلى قيد الانتظار', 'success');
-            });
-        });
-    }
-}
             function renderProjectsList() {
                 const projectsList = document.getElementById('projects-list');
                 projectsList.innerHTML = '';
