@@ -191,6 +191,22 @@
             text-decoration: line-through;
             font-weight: 600;
         }
+
+
+    .form-check {
+        padding-left: 0;
+    }
+
+    .star-task-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .task-name {
+        margin-right: 0.5rem;
+    }
+
     </style>
 </head>
 <body>
@@ -524,226 +540,225 @@
                 }).showToast();
             }
 
-            function renderProjects() {
-                projectContainer.innerHTML = '';
-                const startIndex = (currentPage - 1) * projectsPerPage;
-                const endIndex = startIndex + projectsPerPage;
-                const currentProjects = projects.slice(startIndex, endIndex);
+function renderProjects() {
+    projectContainer.innerHTML = '';
+    const startIndex = (currentPage - 1) * projectsPerPage;
+    const endIndex = startIndex + projectsPerPage;
+    const currentProjects = projects.slice(startIndex, endIndex);
 
-                currentProjects.forEach((project, projectIndex) => {
-                    const actualIndex = startIndex + projectIndex;
-                    const card = document.createElement('div');
-                    card.className = 'col-md-12 mb-4';
-                    card.innerHTML = `
-                        <div class="card">
-                            <div class="card-header" style="background-color: ${project.color}; color: ${getContrastColor(project.color)};">
-                                <h5 class="card-title mb-0">${project.name}</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="progress mb-3">
-                                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                                </div>
-                                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#taskModal" data-project-id="${actualIndex}">
-                                    <i class="fas fa-plus"></i> إضافة مهمة
-                                </button>
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>المهمة</th>
-                                            <th>الحالة</th>
-                                            <th>الأولوية</th>
-                                            <th>الوقت</th>
-                                            <th>الإجراءات</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="task-list" data-project-id="${actualIndex}">
-                                        ${project.tasks.map((task, taskIndex) => `
-    <tr data-status="${task.status}" data-priority="${task.priority}" class="task-row ${task.status === 'مكتملة' ? 'completed-task' : ''}">
-        <td>
-            <div class="form-check">
-                <input class="form-check-input task-complete-checkbox" type="checkbox" ${task.status === 'مكتملة' ? 'checked' : ''} data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <label class="form-check-label task-name ${task.status === 'مكتملة' ? 'completed-task' : ''}">
-                    ${task.name}
-                    ${task.starred ? '<i class="fas fa-star text-warning"></i>' : '<i class="far fa-star text-muted"></i>'}
-                </label>
+    currentProjects.forEach((project, projectIndex) => {
+        const actualIndex = startIndex + projectIndex;
+        const card = document.createElement('div');
+        card.className = 'col-md-12 mb-4';
+        card.innerHTML = `
+            <div class="card">
+                <div class="card-header" style="background-color: ${project.color}; color: ${getContrastColor(project.color)};">
+                    <h5 class="card-title mb-0">${project.name}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#taskModal" data-project-id="${actualIndex}">
+                        <i class="fas fa-plus"></i> إضافة مهمة
+                    </button>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>المهمة</th>
+                                <th>الحالة</th>
+                                <th>الأولوية</th>
+                                <th>الوقت</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody class="task-list" data-project-id="${actualIndex}">
+                            ${project.tasks.map((task, taskIndex) => `
+                                <tr data-status="${task.status}" data-priority="${task.priority}" class="task-row ${task.status === 'مكتملة' ? 'completed-task' : ''}">
+                                    <td>
+                                        <div class="form-check d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <input class="form-check-input task-complete-checkbox" type="checkbox" ${task.status === 'مكتملة' ? 'checked' : ''} data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                                <label class="form-check-label task-name ${task.status === 'مكتملة' ? 'completed-task' : ''}">
+                                                    ${task.name}
+                                                </label>
+                                            </div>
+                                            <button class="btn btn-sm ${task.starred ? 'btn-warning' : 'btn-outline-secondary'} star-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                                <i class="fas ${task.starred ? 'fa-star' : 'fa-star'} ${task.starred ? 'text-white' : 'text-muted'}"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
+                                    <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
+                                    <td>
+                                        <span class="timer">${formatTime(task.totalTime || 0)}</span>
+                                        <button class="btn btn-sm btn-outline-primary timer-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info edit-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger delete-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary copy-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </td>
-        <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
-        <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
-        <td>
-            <span class="timer">${formatTime(task.totalTime || 0)}</span>
-            <button class="btn btn-sm btn-outline-primary timer-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <i class="fas fa-play"></i>
-            </button>
-        </td>
-        <td>
-            <button class="btn btn-sm btn-info edit-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-sm btn-danger delete-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <i class="fas fa-trash"></i>
-            </button>
-            <button class="btn btn-sm btn-secondary copy-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <i class="fas fa-copy"></i>
-            </button>
-               <button class="btn btn-sm ${task.starred ? 'btn-warning' : 'btn-outline-secondary'} star-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                <i class="fas ${task.starred ? 'fa-star' : 'fa-star'} ${task.starred ? 'text-white' : 'text-muted'}"></i>
-            </button>
-        </td>
-    </tr>
-`).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `;
-                    projectContainer.appendChild(card);
+        `;
+        projectContainer.appendChild(card);
 
-                    // Initialize Sortable for the task list
-                    new Sortable(card.querySelector('.task-list'), {
-                        animation: 150,
-                        ghostClass: 'blue-background-class',
-                        onEnd: function (evt) {
-                            const projectId = evt.target.getAttribute('data-project-id');
-                            const oldIndex = evt.oldIndex;
-                            const newIndex = evt.newIndex;
-                            const task = projects[projectId].tasks.splice(oldIndex, 1)[0];
-                            projects[projectId].tasks.splice(newIndex, 0, task);
-                            saveProjects();
-                            renderProjects();
-                            applyFilters();
-                        }
-                    });
-                });
-
-                renderPagination();
-                updateProgressBars();
-                renderStarredTasks();
-
-                document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#taskModal"]').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        projectIdInput.value = this.dataset.projectId;
-                        taskNameInput.value = '';
-                        taskDescriptionInput.value = '';
-                        taskStatusInput.value = statuses[0].name;
-                        taskPriorityInput.value = 'low';
-                        tagify.removeAllTags();
-                        taskStarredInput.checked = false;
-                        taskIdInput.value = '';
-                    });
-                });
-
-// داخل دالة renderProjects()
-// ابحث عن الجزء الخاص بأزرار المؤقت وقم بتحديثه كما يلي:
-document.querySelectorAll('.timer-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const projectId = this.dataset.projectId;
-        const taskId = this.dataset.taskId;
-        const task = projects[projectId].tasks[taskId];
-        const timerSpan = this.parentElement.querySelector('.timer');
-        const timerBtn = this;
-
-        if (!task.timerRunning) {
-            task.timerRunning = true;
-            task.timerStart = Date.now() - (task.totalTime || 0);
-            timerBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            timerBtn.classList.add('btn-warning');
-            timerSpan.classList.add('timer-running');
-
-            task.timerInterval = setInterval(() => {
-                const elapsedTime = Date.now() - task.timerStart;
-                timerSpan.textContent = formatTime(elapsedTime);
-            }, 1000);
-        } else {
-            task.timerRunning = false;
-            clearInterval(task.timerInterval);
-            task.totalTime = Date.now() - task.timerStart;
-            timerBtn.innerHTML = '<i class="fas fa-play"></i>';
-            timerBtn.classList.remove('btn-warning');
-            timerSpan.classList.remove('timer-running');
-            
-            // تحديث الإحصائيات فوريًا
-            updateStatistics();
-        }
-
-        saveProjects();
+        // Initialize Sortable for the task list
+        new Sortable(card.querySelector('.task-list'), {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            onEnd: function (evt) {
+                const projectId = evt.target.getAttribute('data-project-id');
+                const oldIndex = evt.oldIndex;
+                const newIndex = evt.newIndex;
+                const task = projects[projectId].tasks.splice(oldIndex, 1)[0];
+                projects[projectId].tasks.splice(newIndex, 0, task);
+                saveProjects();
+                renderProjects();
+                applyFilters();
+            }
+        });
     });
-});
-                document.querySelectorAll('.edit-task-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const projectId = this.dataset.projectId;
-                        const taskId = this.dataset.taskId;
-                        const task = projects[projectId].tasks[taskId];
 
-                        projectIdInput.value = projectId;
-                        taskNameInput.value = task.name;
-                        taskDescriptionInput.value = task.description;
-                        taskStatusInput.value = task.status;
-                        taskPriorityInput.value = task.priority;
-                        tagify.removeAllTags();
-                        tagify.addTags(task.tags);
-                        taskStarredInput.checked = task.starred;
-                        taskIdInput.value = taskId;
+    renderPagination();
+    updateProgressBars();
+    renderStarredTasks();
 
-                        const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
-                        taskModal.show();
-                    });
-                });
-
-                document.querySelectorAll('.delete-task-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
-                            const projectId = this.dataset.projectId;
-                            const taskId = this.dataset.taskId;
-                            projects[projectId].tasks.splice(taskId, 1);
-                            saveProjects();
-                            renderProjects();
-                            applyFilters();
-                            showToast('تم حذف المهمة', 'success');
-                        }
-                    });
-                });
-
-                document.querySelectorAll('.copy-task-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const projectId = this.dataset.projectId;
-                        const taskId = this.dataset.taskId;
-                        const task = projects[projectId].tasks[taskId];
-                        
-                        navigator.clipboard.writeText(task.name).then(() => {
-                            showToast('تم نسخ اسم المهمة', 'success');
-                        }, () => {
-                            showToast('فشل نسخ اسم المهمة', 'error');
-                        });
-                    });
-                });
-
-          document.querySelectorAll('.star-task-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const projectId = this.dataset.projectId;
-        const taskId = this.dataset.taskId;
-        const task = projects[projectId].tasks[taskId];
-        task.starred = !task.starred;
-        saveProjects();
-        renderProjects();
-        applyFilters();
-        showToast(task.starred ? 'تم تمييز المهمة' : 'تم إلغاء تمييز المهمة', 'success');
+    document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#taskModal"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            projectIdInput.value = this.dataset.projectId;
+            taskNameInput.value = '';
+            taskDescriptionInput.value = '';
+            taskStatusInput.value = statuses[0].name;
+            taskPriorityInput.value = 'low';
+            tagify.removeAllTags();
+            taskStarredInput.checked = false;
+            taskIdInput.value = '';
+        });
     });
-});
 
-                document.querySelectorAll('.task-complete-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        const projectId = this.dataset.projectId;
-                        const taskId = this.dataset.taskId;
-                        const task = projects[projectId].tasks[taskId];
-                        task.status = this.checked ? 'مكتملة' : 'قيد الانتظار';
-                        saveProjects();
-                        renderProjects();
-                        applyFilters();
-                    });
-                });
+    document.querySelectorAll('.timer-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            const taskId = this.dataset.taskId;
+            const task = projects[projectId].tasks[taskId];
+            const timerSpan = this.parentElement.querySelector('.timer');
+            const timerBtn = this;
+
+            if (!task.timerRunning) {
+                task.timerRunning = true;
+                task.timerStart = Date.now() - (task.totalTime || 0);
+                timerBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                timerBtn.classList.add('btn-warning');
+                timerSpan.classList.add('timer-running');
+
+                task.timerInterval = setInterval(() => {
+                    const elapsedTime = Date.now() - task.timerStart;
+                    timerSpan.textContent = formatTime(elapsedTime);
+                }, 1000);
+            } else {
+                task.timerRunning = false;
+                clearInterval(task.timerInterval);
+                task.totalTime = Date.now() - task.timerStart;
+                timerBtn.innerHTML = '<i class="fas fa-play"></i>';
+                timerBtn.classList.remove('btn-warning');
+                timerSpan.classList.remove('timer-running');
+                
+                // تحديث الإحصائيات فوريًا
+                updateStatistics();
             }
 
+            saveProjects();
+        });
+    });
+
+    document.querySelectorAll('.edit-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            const taskId = this.dataset.taskId;
+            const task = projects[projectId].tasks[taskId];
+
+            projectIdInput.value = projectId;
+            taskNameInput.value = task.name;
+            taskDescriptionInput.value = task.description;
+            taskStatusInput.value = task.status;
+            taskPriorityInput.value = task.priority;
+            tagify.removeAllTags();
+            tagify.addTags(task.tags);
+            taskStarredInput.checked = task.starred;
+            taskIdInput.value = taskId;
+
+            const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+            taskModal.show();
+        });
+    });
+
+    document.querySelectorAll('.delete-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+                const projectId = this.dataset.projectId;
+                const taskId = this.dataset.taskId;
+                projects[projectId].tasks.splice(taskId, 1);
+                saveProjects();
+                renderProjects();
+                applyFilters();
+                showToast('تم حذف المهمة', 'success');
+            }
+        });
+    });
+
+    document.querySelectorAll('.copy-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            const taskId = this.dataset.taskId;
+            const task = projects[projectId].tasks[taskId];
+            
+            navigator.clipboard.writeText(task.name).then(() => {
+                showToast('تم نسخ اسم المهمة', 'success');
+            }, () => {
+                showToast('فشل نسخ اسم المهمة', 'error');
+            });
+        });
+    });
+
+    document.querySelectorAll('.star-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            const taskId = this.dataset.taskId;
+            const task = projects[projectId].tasks[taskId];
+            task.starred = !task.starred;
+            saveProjects();
+            renderProjects();
+            applyFilters();
+            showToast(task.starred ? 'تم تمييز المهمة' : 'تم إلغاء تمييز المهمة', 'success');
+        });
+    });
+
+    document.querySelectorAll('.task-complete-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const projectId = this.dataset.projectId;
+            const taskId = this.dataset.taskId;
+            const task = projects[projectId].tasks[taskId];
+            task.status = this.checked ? 'مكتملة' : 'قيد الانتظار';
+            saveProjects();
+            renderProjects();
+            applyFilters();
+        });
+    });
+}
             function formatTime(ms) {
                 if (isNaN(ms) || ms < 0) {
                     return '00:00:00';
