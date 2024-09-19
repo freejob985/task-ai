@@ -558,40 +558,40 @@
                                     </thead>
                                     <tbody class="task-list" data-project-id="${actualIndex}">
                                         ${project.tasks.map((task, taskIndex) => `
-                                            <tr data-status="${task.status}" data-priority="${task.priority}" class="task-row ${task.status === 'مكتملة' ? 'completed-task' : ''}">
-                                                <td>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input task-complete-checkbox" type="checkbox" ${task.status === 'مكتملة' ? 'checked' : ''} data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <label class="form-check-label task-name ${task.status === 'مكتملة' ? 'completed-task' : ''}">
-                                                            ${task.name}
-                                                            ${task.starred ? '<i class="fas fa-star text-warning"></i>' : ''}
-                                                        </label>
-                                                    </div>
-                                                </td>
-                                                <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
-                                                <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
-                                                <td>
-                                                    <span class="timer">${formatTime(task.totalTime || 0)}</span>
-                                                    <button class="btn btn-sm btn-outline-primary timer-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <i class="fas fa-play"></i>
-                                                    </button>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info edit-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger delete-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-secondary copy-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <i class="fas fa-copy"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-warning star-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
-                                                        <i class="fas ${task.starred ? 'fa-star' : 'fa-star-o'}"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
+    <tr data-status="${task.status}" data-priority="${task.priority}" class="task-row ${task.status === 'مكتملة' ? 'completed-task' : ''}">
+        <td>
+            <div class="form-check">
+                <input class="form-check-input task-complete-checkbox" type="checkbox" ${task.status === 'مكتملة' ? 'checked' : ''} data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <label class="form-check-label task-name ${task.status === 'مكتملة' ? 'completed-task' : ''}">
+                    ${task.name}
+                    ${task.starred ? '<i class="fas fa-star text-warning"></i>' : '<i class="far fa-star text-muted"></i>'}
+                </label>
+            </div>
+        </td>
+        <td><span class="badge" style="background-color: ${getStatusColor(task.status)}">${task.status}</span></td>
+        <td><span class="badge priority-${task.priority}">${getPriorityText(task.priority)}</span></td>
+        <td>
+            <span class="timer">${formatTime(task.totalTime || 0)}</span>
+            <button class="btn btn-sm btn-outline-primary timer-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <i class="fas fa-play"></i>
+            </button>
+        </td>
+        <td>
+            <button class="btn btn-sm btn-info edit-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger delete-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="btn btn-sm btn-secondary copy-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <i class="fas fa-copy"></i>
+            </button>
+               <button class="btn btn-sm ${task.starred ? 'btn-warning' : 'btn-outline-secondary'} star-task-btn" data-project-id="${actualIndex}" data-task-id="${taskIndex}">
+                <i class="fas ${task.starred ? 'fa-star' : 'fa-star'} ${task.starred ? 'text-white' : 'text-muted'}"></i>
+            </button>
+        </td>
+    </tr>
+`).join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -633,38 +633,42 @@
                     });
                 });
 
-                document.querySelectorAll('.timer-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const projectId = this.dataset.projectId;
-                        const taskId = this.dataset.taskId;
-                        const task = projects[projectId].tasks[taskId];
-                        const timerSpan = this.parentElement.querySelector('.timer');
-                        const timerBtn = this;
+// داخل دالة renderProjects()
+// ابحث عن الجزء الخاص بأزرار المؤقت وقم بتحديثه كما يلي:
+document.querySelectorAll('.timer-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const projectId = this.dataset.projectId;
+        const taskId = this.dataset.taskId;
+        const task = projects[projectId].tasks[taskId];
+        const timerSpan = this.parentElement.querySelector('.timer');
+        const timerBtn = this;
 
-                        if (!task.timerRunning) {
-                            task.timerRunning = true;
-timerStart = Date.now() - (task.totalTime || 0);
-                            timerBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                            timerBtn.classList.add('btn-warning');
-                            timerSpan.classList.add('timer-running');
+        if (!task.timerRunning) {
+            task.timerRunning = true;
+            task.timerStart = Date.now() - (task.totalTime || 0);
+            timerBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            timerBtn.classList.add('btn-warning');
+            timerSpan.classList.add('timer-running');
 
-                            task.timerInterval = setInterval(() => {
-                                const elapsedTime = Date.now() - task.timerStart;
-                                timerSpan.textContent = formatTime(elapsedTime);
-                            }, 1000);
-                        } else {
-                            task.timerRunning = false;
-                            clearInterval(task.timerInterval);
-                            task.totalTime = Date.now() - task.timerStart;
-                            timerBtn.innerHTML = '<i class="fas fa-play"></i>';
-                            timerBtn.classList.remove('btn-warning');
-                            timerSpan.classList.remove('timer-running');
-                        }
+            task.timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - task.timerStart;
+                timerSpan.textContent = formatTime(elapsedTime);
+            }, 1000);
+        } else {
+            task.timerRunning = false;
+            clearInterval(task.timerInterval);
+            task.totalTime = Date.now() - task.timerStart;
+            timerBtn.innerHTML = '<i class="fas fa-play"></i>';
+            timerBtn.classList.remove('btn-warning');
+            timerSpan.classList.remove('timer-running');
+            
+            // تحديث الإحصائيات فوريًا
+            updateStatistics();
+        }
 
-                        saveProjects();
-                    });
-                });
-
+        saveProjects();
+    });
+});
                 document.querySelectorAll('.edit-task-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const projectId = this.dataset.projectId;
@@ -714,18 +718,18 @@ timerStart = Date.now() - (task.totalTime || 0);
                     });
                 });
 
-                document.querySelectorAll('.star-task-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const projectId = this.dataset.projectId;
-                        const taskId = this.dataset.taskId;
-                        const task = projects[projectId].tasks[taskId];
-                        task.starred = !task.starred;
-                        saveProjects();
-                        renderProjects();
-                        applyFilters();
-                        showToast(task.starred ? 'تم تمييز المهمة' : 'تم إلغاء تمييز المهمة', 'success');
-                    });
-                });
+          document.querySelectorAll('.star-task-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const projectId = this.dataset.projectId;
+        const taskId = this.dataset.taskId;
+        const task = projects[projectId].tasks[taskId];
+        task.starred = !task.starred;
+        saveProjects();
+        renderProjects();
+        applyFilters();
+        showToast(task.starred ? 'تم تمييز المهمة' : 'تم إلغاء تمييز المهمة', 'success');
+    });
+});
 
                 document.querySelectorAll('.task-complete-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
@@ -1090,53 +1094,53 @@ timerStart = Date.now() - (task.totalTime || 0);
                 });
             }
 
-            function updateStatistics() {
-                const selectedProjects = new Set(Array.from(document.querySelectorAll('.project-filter:checked')).map(cb => cb.value));
-                const selectedStatuses = new Set(Array.from(document.querySelectorAll('.status-filter:checked')).map(cb => cb.value));
-                const selectedPriorities = new Set(Array.from(document.querySelectorAll('.priority-filter:checked')).map(cb => cb.value));
-                const showStarredOnly = document.getElementById('starred-tasks-filter').checked;
+function updateStatistics() {
+    const selectedProjects = new Set(Array.from(document.querySelectorAll('.project-filter:checked')).map(cb => cb.value));
+    const selectedStatuses = new Set(Array.from(document.querySelectorAll('.status-filter:checked')).map(cb => cb.value));
+    const selectedPriorities = new Set(Array.from(document.querySelectorAll('.priority-filter:checked')).map(cb => cb.value));
+    const showStarredOnly = document.getElementById('starred-tasks-filter').checked;
 
-                let totalTasks = 0;
-                let completedTasks = 0;
-                let totalTime = 0;
-                let starredTasks = 0;
-                const priorityCounts = { high: 0, medium: 0, low: 0 };
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let totalTime = 0;
+    let starredTasks = 0;
+    const priorityCounts = { high: 0, medium: 0, low: 0 };
 
-                projects.forEach(project => {
-                    if (selectedProjects.has(project.name)) {
-                        project.tasks.forEach(task => {
-                            if (selectedStatuses.has(task.status) &&
-                                selectedPriorities.has(task.priority) &&
-                                (!showStarredOnly || task.starred)) {
-                                totalTasks++;
-                                if (task.status === 'مكتملة') {
-                                    completedTasks++;
-                                }
-                                totalTime += task.totalTime || 0;
-                                if (task.starred) {
-                                    starredTasks++;
-                                }
-                                priorityCounts[task.priority]++;
-                            }
-                        });
+    projects.forEach(project => {
+        if (selectedProjects.has(project.name)) {
+            project.tasks.forEach(task => {
+                if (selectedStatuses.has(task.status) &&
+                    selectedPriorities.has(task.priority) &&
+                    (!showStarredOnly || task.starred)) {
+                    totalTasks++;
+                    if (task.status === 'مكتملة') {
+                        completedTasks++;
                     }
-                });
+                    totalTime += task.totalTime || 0;
+                    if (task.starred) {
+                        starredTasks++;
+                    }
+                    priorityCounts[task.priority]++;
+                }
+            });
+        }
+    });
 
-                const completionRate = totalTasks > 0 ? (completedTasks / totalTasks * 100).toFixed(2) : 0;
+    const completionRate = totalTasks > 0 ? (completedTasks / totalTasks * 100).toFixed(2) : 0;
 
-                statsContent.innerHTML = `
-                    <p><span class="badge bg-primary">إجمالي المهام: ${totalTasks}</span></p>
-                    <p><span class="badge bg-success">المهام المكتملة: ${completedTasks}</span></p>
-                    <p><span class="badge bg-info">نسبة الإنجاز: ${completionRate}%</span></p>
-                    <p><span class="badge bg-warning">الوقت الإجمالي: ${formatTime(totalTime)}</span></p>
-                    <p><span class="badge bg-secondary">المهام المميزة: ${starredTasks}</span></p>
-                    <p>الأولويات:</p>
-                    <p><span class="badge bg-danger">عالية: ${priorityCounts.high}</span></p>
-                    <p><span class="badge bg-warning text-dark">متوسطة: ${priorityCounts.medium}</span></p>
-                    <p><span class="badge bg-success">منخفضة: ${priorityCounts.low}</span></p>
-                `;
-            }
-
+    const statsContent = document.getElementById('stats-content');
+    statsContent.innerHTML = `
+        <p><span class="badge bg-primary">إجمالي المهام: ${totalTasks}</span></p>
+        <p><span class="badge bg-success">المهام المكتملة: ${completedTasks}</span></p>
+        <p><span class="badge bg-info">نسبة الإنجاز: ${completionRate}%</span></p>
+        <p><span class="badge bg-warning">الوقت الإجمالي: ${formatTime(totalTime)}</span></p>
+        <p><span class="badge bg-secondary">المهام المميزة: ${starredTasks}</span></p>
+        <p>الأولويات:</p>
+        <p><span class="badge bg-danger">عالية: ${priorityCounts.high}</span></p>
+        <p><span class="badge bg-warning text-dark">متوسطة: ${priorityCounts.medium}</span></p>
+        <p><span class="badge bg-success">منخفضة: ${priorityCounts.low}</span></p>
+    `;
+}
             projectForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const newProject = {
